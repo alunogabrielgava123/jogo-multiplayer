@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+
+  <style>
+    body {
+      background-color: rgb(34, 30, 30);
+    }
+    #scream {
+      border: 2px solid white;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      image-rendering: -moz-crisp-edges;
+      height: 400px;
+      width: 400px;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: row;
+    }
+
+    #menu {
+      height: 400px;
+      width: 180px;
+      border: 2px solid white;
+      margin-left: 8px;
+      display: flex;
+      flex-direction: column;
+    }
+    #menu h2 {
+      color:white;
+    }
+
+    .header-menu {
+      display: flex;
+      justify-content: center;
+      border-bottom: solid white 2px;
+    }
+
+    #content-menu {
+      color: white;
+      margin-top: 10px;
+      margin-left: 10%;
+    }
+
+  </style>
+  <body>
+    <div class="main">
+      <canvas id="scream" height="10" width="10"></canvas>
+      <div id="menu">
+        <div class="header-menu">
+            <h2>Menu Pontos </h2>
+        </div>
+        <div id="content-menu"></div>
+      </div>
+    </div>
+  </body>
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module">
+    //script cancas
+    import Game from "./game.mjs";
+    import keyDown from "./listener.mjs";
+    import renderScream from "./randerScream.mjs";
+
+    const canvas = document.getElementById("scream");
+    const context = canvas.getContext("2d");
+    const menuPontos = document.getElementById('content-menu');
+    const doc = document; 
+    //Camada do jogo regra negocios e afins
+    const game = new Game();
+    const keyDownListener = keyDown(document);
+
+    //render players
+    const socket = io();
+
+    socket.on("connect", () => {
+      renderScream(game, context, requestAnimationFrame, socket.id, menuPontos, doc);
+    });
+
+    socket.on("add-frute", (command) => {
+      game.addFrute(command);
+    });
+
+    socket.on("add-player", (comand) => {
+      if (comand.playerId !== socket.id) {
+        game.addPlayer(comand);
+      }
+    });
+
+    socket.on("delete-frute", (command) => {
+    
+      game.deleteFrute(command.fruteId);
+    });
+
+    socket.on("add-pointer", (command) => {
+   
+      game.addPointer(command);
+    });
+
+    socket.on("setup", (state) => {
+      //Setando o estado do jogo
+      game.setState(state);
+      //Registrando o usuario para a camada de input do jogo
+      keyDownListener.registerPlayer(socket.id);
+      //Escrevendo meu game dentro da camada de input do jogo
+      keyDownListener.subcribe(game.movePlayer);
+      //Emitindo para o servidor o movimento do meu player
+      keyDownListener.subcribe((command) => {
+        socket.emit("move-player", command);
+      });
+    });
+
+    socket.on("delete-player", (command) => {
+      game.deletePlayer(command.playerId);
+    });
+
+    socket.on("delete-pointer", (command) => {
+      console.log(game.state.point);
+      game.deletePointer(command);
+    });
+
+    socket.on("change-pointer", (command) => {
+      if (socket.id !== command.playerId) {
+        game.updatePoint(command);
+      }
+    });
+  </script>
+</html>
