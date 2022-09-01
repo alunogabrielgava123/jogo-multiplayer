@@ -27,7 +27,7 @@ export default function Game() {
     }
 
     function start() {
-        setInterval(addFrute, 5000);
+        setInterval(addFrute, 1000);
     }
 
 
