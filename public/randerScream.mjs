@@ -48,7 +48,7 @@ export default function renderScream(game, context, requestAnimationFrame, curre
 
 function clearField(context, menuPontos) {
     context.fillStyle = "white";
-    context.clearRect(0, 0, 10, 10);
+    context.clearRect(0, 0, 50, 50);
     menuPontos.innerHTML = '';
 }
 

@@ -5,8 +5,8 @@ export default function Game() {
         player: {},
         point: {},
         screen: {
-            with: 10,
-            height: 10
+            with: 50,
+            height: 50
         }
     };
 
