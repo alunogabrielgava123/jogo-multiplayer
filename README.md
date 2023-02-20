@@ -16,6 +16,9 @@ Para executar o jogo, siga os passos abaixo:
 
 O jogo é um multiplayer em tempo real onde os jogadores devem comer a maça e quem fizer mais ponto ganha. Os jogadores se comunicam utilizando stream de dados e as camadas de abstração implementadas no projeto garantem uma melhor organização do código e facilidade de manutenção.
 
+![Captura de tela do jogo](images/screnshot.png)
+
+
 Esperamos que esse projeto seja útil para quem deseja aprender sobre camadas de abstração e stream de dados em aplicações Node.js. Sinta-se à vontade para explorar o código e modificar o jogo de acordo com suas necessidades.
 
 
