@@ -12,6 +12,7 @@ const server = http.createServer(app);
 const sockets = new Server(server);
 const game = new Game();
 
+
 game.start();
 
 game.subscribe((command) => {
@@ -37,7 +38,7 @@ sockets.on('connection', socket => {
         game.movePlayer(command);
     });
 
-
+    
     socket.emit('setup', game.state);
 
 })
