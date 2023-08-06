@@ -9,8 +9,9 @@ Para executar o jogo, siga os passos abaixo:
 1. Certifique-se de ter o Node.js instalado na sua máquina.
 2. Baixe ou clone o repositório do jogo em sua máquina.
 3. Abra um terminal na pasta do projeto.
-4. Execute o script de inicialização do servidor com o comando `npm run dev`.
-5. Abra o navegador e acesse o endereço `http://localhost:3001` para jogar o game.
+4. Execute o comando `node install` obs( estou usando a versão 16.15.1 do nodejs) 
+5. Execute o script de inicialização do servidor com o comando `npm run dev`.
+6. Abra o navegador e acesse o endereço `http://localhost:3001` para jogar o game.
 
 ## Funcionamento do jogo
 
