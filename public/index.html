@@ -27,7 +27,7 @@
 
     #menu {
       height: 1000px;
-      width: 180px;
+      width: 230px;
       border: 2px solid white;
       margin-left: 8px;
       display: flex;
@@ -49,6 +49,48 @@
       margin-left: 10%;
     }
 
+    #end-game {
+       display: flex;
+       color: white;
+       font-size: large;
+       font-weight: bold;
+       margin: 1rem; 
+    }
+
+    #log-menu {
+       height: 970px; 
+       width: 600px;
+       border: 2px solid white;
+       margin-left: 8px;
+       display: flex;
+       flex-direction:  column;
+       justify-content: flex-end;    
+       overflow: auto;
+       padding: 1rem; 
+    }
+
+    .form-item {
+       display: flex;
+       flex-direction: row;
+       justify-content: space-between;
+       padding-top: 0.2rem;    
+    }
+
+    #input-message {
+       width:  500px;
+       padding: .2rem;    
+    }
+
+    #form {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    #content-message {
+       overflow: auto;
+    }
+
   </style>
   <body>
     <div class="main">
@@ -59,6 +101,14 @@
         </div>
         <div id="content-menu"></div>
       </div>
+      <div id="log-menu"> 
+          <div id="content-message"></div> 
+          <div class="form-item"> 
+            <form id="form">
+                <input id="input-message" placeholder="mensagem" id="chat" type="text"/> 
+            <button>Enviar</button>
+          </div> 
+      </div>
     </div>
   </body>
   <script src="/socket.io/socket.io.js"></script>
@@ -67,10 +117,16 @@
     import Game from "./game.mjs";
     import keyDown from "./listener.mjs";
     import renderScream from "./randerScream.mjs";
-
+    import textConnectionTitle from './textile.mjs';
+    import messageUser  from './messageUser.mjs'
+    
     const canvas = document.getElementById("scream");
+    const end = document.getElementById('end-game');
     const context = canvas.getContext("2d");
     const menuPontos = document.getElementById('content-menu');
+    const menuLog = document.getElementById('content-message');
+    const form = document.getElementById('form');
+    const input = document.getElementById('input-message');
     const doc = document; 
     //Camada do jogo regra negocios e afins
     const game = new Game();
@@ -80,10 +136,13 @@
     const socket = io();
 
     socket.on("connect", () => {
+      //layer responsavel por modificar a tela do jogo  
       renderScream(game, context, requestAnimationFrame, socket.id, menuPontos, doc);
     });
+     
 
     socket.on("add-frute", (command) => {
+      //verificando se o sistema atingiu o limite de fruta
       game.addFrute(command);
     });
 
@@ -93,13 +152,17 @@
       }
     });
 
-    socket.on("delete-frute", (command) => {
-    
+    socket.on('end', (command) => {
+        //auterar isso depois desenvolver uma resposta melhor ao final do jogo
+       game.resetEndGame(command);
+       //end.innerHTML += command.msg;     
+    })
+
+    socket.on("delete-frute", (command) => { 
       game.deleteFrute(command.fruteId);
     });
 
-    socket.on("add-pointer", (command) => {
-   
+    socket.on("add-pointer", (command) => {  
       game.addPointer(command);
     });
 
@@ -120,9 +183,25 @@
       game.deletePlayer(command.playerId);
     });
 
+    socket.on('new_player', (command) => {
+       textConnectionTitle(command.playerId, document, menuLog, false); 
+    })
+
     socket.on("delete-pointer", (command) => {
-      console.log(game.state.point);
       game.deletePointer(command);
+    });
+
+    socket.on('end-player', (command) => {
+      console.log(command);
+    })
+    
+    
+    socket.on('receiver-msg', (command) => { 
+      messageUser(menuLog, command.msg, command.playerId, socket.id) 
+    }) 
+    
+    socket.on('disconnectPlayer', (command) => {
+      textConnectionTitle(command.playerId, document, menuLog, true); 
     });
 
     socket.on("change-pointer", (command) => {
@@ -130,5 +209,13 @@
         game.updatePoint(command);
       }
     });
+
+   //escutando o evento de envio de dados via socket mensagens para o servidor 
+   form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        socket.emit('send_message', { msg : input.value, playerId : socket.id })
+        input.value = "";
+   }) 
+
   </script>
 </html>

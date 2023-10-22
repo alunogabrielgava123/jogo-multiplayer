@@ -1,9 +1,18 @@
 export default function Game() {
     //Estado do jogo
+    //
+    //
+
+    const MAXSCORE = 2;
+
     const state = {
+        counterFrute : 0,
         frute: {},
         player: {},
         point: {},
+        countPlayer : 0,
+        endGame : false,
+        winner_player : {},
         screen: {
             with: 50,
             height: 50
@@ -12,6 +21,7 @@ export default function Game() {
 
 
     const observer = [];
+    
 
 
     function subscribe(functionObserver) {
@@ -26,22 +36,54 @@ export default function Game() {
         }
     }
 
+    //sende messag 
+    function receiverMessage(command) {
+        notifyAll({
+            type : 'receiver-msg',
+            msg : command.msg,
+            playerId : command.playerId
+        })
+    }
+
     function start() {
         setInterval(addFrute, 3000);
     }
+    
+    function disconnectPlayer(command) {
+        state['countPlayer'] -= command.counter;
+        notifyAll({
+            type : 'disconnectPlayer',
+            playerId : command.playerId,
+            counter : command.counter
+        })
+    } 
+
+    function newPlayerCounter(command) {
+       state['countPlayer'] =+ command.counter;
+        
+       //notify all users when new player coomming 
+        notifyAll({
+            type : 'new_player',
+            playerId : command.playerId,
+            counter : command.counter
+        }) 
+    }
+
+    
+    //final d
+    function resetEndGame(command) { 
+        state.frute = {};  
+    }
+    
 
 
     function addPlayer(player) {
-
+        
         const playerId = player.playerId;
         const playerX = "playerX" in player ? player.playerX : Math.floor(Math.random() * state.screen.with);
         const playerY = "playerY" in player ? player.playerY : Math.floor(Math.random() * state.screen.height);
 
-        state.player[playerId] = {
-            playerX,
-            playerY,
-        };
-
+        state.player[playerId] = {playerX,playerY}
         notifyAll({
             type: 'add-player',
             playerId,
@@ -54,10 +96,12 @@ export default function Game() {
     function setState(newState) {
         Object.assign(state, newState);
     }
-
+    
+ 
 
     //ta aqui o erro
     function addFrute(command) {
+
         const fruteId = command ? command.fruteId : Math.floor(Math.random() * 10000000).toString();
         const fruteX = command ? command.fruteX : Math.floor(Math.random() * state.screen.with);
         const fruteY = command ? command.fruteY : Math.floor(Math.random() * state.screen.height);
@@ -67,12 +111,16 @@ export default function Game() {
             fruteX: fruteX,
             fruteY: fruteY
         };
-
+        
+        state['counterFrute'] += 1;
+        
         notifyAll({
             type: 'add-frute',
             fruteId,
             fruteX,
-            fruteY
+            fruteY,
+            counterFrute : state['counterFrute'],
+            msg : 'limite de frutas atingido!'
         });
     }
 
@@ -97,6 +145,7 @@ export default function Game() {
     }
 
 
+
     //Pontos
     function addPointer(command) {
         //ele ira buscar o ponto no estado do game e 
@@ -108,6 +157,9 @@ export default function Game() {
             pointer: pointer
         };
 
+        //verificando se tem ganhador; 
+        
+        
         notifyAll({
             type: "add-pointer",
             playerId: playerId,
@@ -126,8 +178,8 @@ export default function Game() {
         state.point[playerId] = {
             pointer: newPointer
         }
-
-
+        
+    
         notifyAll({
             type: 'change-pointer',
             playerId: playerId,
@@ -155,8 +207,9 @@ export default function Game() {
             const frute = state.frute[fruteId];
 
             if (frute.fruteX === player.playerX && frute.fruteY === player.playerY) {
-
-                deleteFrute({ fruteId: fruteId });
+                //mudanca de estado
+                console.log(state.player)
+                deleteFrute({ fruteId: fruteId }); 
                 updatePoint({ playerId: playerId });
             }
         }
@@ -166,6 +219,8 @@ export default function Game() {
 
     //Move player camada de jogo que movimenta os ususarios;
     function movePlayer(command) {
+
+
         const keyBoardMove = {
             ArrowUp: function (player) {
                 if (player.playerY > 0)
@@ -226,9 +281,14 @@ export default function Game() {
         start,
         addPointer,
         deletePointer,
-        updatePoint
+        updatePoint,
+        resetEndGame,
+        disconnectPlayer,
+        newPlayerCounter,
+        receiverMessage
     };
-}
+        
+   }
 
 
 
